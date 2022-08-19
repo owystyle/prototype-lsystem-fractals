@@ -1,0 +1,689 @@
+<div id="system">
+  <canvas id="canvas"></canvas>
+  <div id="tools">
+    <div id="symbols">
+      <div class="tiles"></div>
+    </div>
+
+    <div id="rule">
+      <div class="tiles"></div>
+    </div>
+
+    <div id="axiom">
+      <div class="tiles"></div>
+    </div>
+
+    <div id="tabs">
+      <a data-tab="segment">Line</a>
+      <a data-tab="shape">Shape</a>
+    </div>
+
+    <div id="iterations">
+      <h2>Steps</h2>
+      <div class="tiles">
+        <a data-value="0">0</a>
+        <a data-value="1">1</a>
+        <a data-value="2">2</a>
+        <a data-value="3">3</a>
+        <a data-value="4">4</a>
+        <a data-value="5">5</a>
+      </div>
+    </div>
+
+    <div id="stroke">
+      <h2>Stroke</h2>
+      <div class="strokes">
+        <a data-value="2"></a>
+        <a data-value="4"></a>
+        <a data-value="10"></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow: hidden;
+  }
+
+  body {
+    font-family: "Open Sans", Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    background-color: #efefef;
+  }
+
+  a {
+    transition: all 0.2s;
+  }
+
+  h2 {
+    margin: 0;
+    padding: 0;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  #system {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    user-select: none;
+  }
+
+  #tools {
+    border: 1px solid #efefef;
+    display: flex;
+    align-items: center;
+    position: absolute;
+    bottom: 0;
+    left: 100px;
+    right: 100px;
+    padding: 10px;
+    box-shadow: 0 1px 3px 0 rgba(0, 24, 55, 0.2),
+      0 1px 1px 0 rgba(0, 24, 55, 0.04), 0 2px 1px -1px rgba(0, 24, 55, 0.02);
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+  #symbols {
+    margin: 0 20px;
+    min-width: 160px;
+  }
+
+  .strokes {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .strokes a {
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    display: block;
+    background-color: #ddd;
+    margin: 0 5px;
+    cursor: pointer;
+  }
+  .strokes a.is-active {
+    background-color: #000;
+  }
+  .strokes a:nth-child(1) {
+    width: 4px;
+  }
+  .strokes a:nth-child(2) {
+    width: 8px;
+  }
+  .strokes a:nth-child(3) {
+    width: 16px;
+  }
+
+  .tiles {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-flow: row wrap;
+  }
+  .tiles a {
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    display: block;
+    border: 1px solid transparent;
+    font-weight: bold;
+    margin: 0 5px;
+    user-select: none;
+    cursor: pointer;
+    box-shadow: 0 1px 3px 0 rgba(0, 24, 55, 0.2),
+      0 1px 1px 0 rgba(0, 24, 55, 0.04), 0 2px 1px -1px rgba(0, 24, 55, 0.02);
+    text-align: center;
+    background-color: #fff;
+  }
+  .tiles a.is-active {
+    box-shadow: none;
+    background-color: #d395ed;
+    cursor: default;
+    color: #fff;
+  }
+
+  .tiles a.is-large {
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    border-radius: 50%;
+    border-color: #cbd1d5;
+    /*font-size: 18px;*/
+  }
+  .tiles a.is-small {
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border-color: #cbd1d5;
+    border-radius: 5px;
+    font-size: 18px;
+  }
+
+  #axiom {
+    padding: 10px;
+  }
+  #axiom .tiles a {
+    background-color: #b8c0f8;
+    border-color: #8c98e9;
+  }
+
+  #rule {
+    padding: 10px;
+  }
+  #rule .tiles a {
+    background-color: #bcddf0;
+    border-color: #88d4ff;
+  }
+
+  #tabs {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    display: flex;
+    align-items: center;
+  }
+  #tabs a {
+    display: block;
+    width: 100px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    background-color: #fff;
+    box-shadow: 0 1px 3px 0 rgba(0, 24, 55, 0.2),
+      0 1px 1px 0 rgba(0, 24, 55, 0.04), 0 2px 1px -1px rgba(0, 24, 55, 0.02);
+  }
+  #tabs a.is-active {
+    background-color: #efefef;
+    box-shadow: none;
+    cursor: default;
+  }
+  #tabs a[data-tab="segment"].is-active {
+    background-color: #bcddf0;
+  }
+  #tabs a[data-tab="shape"].is-active {
+    background-color: #b8c0f8;
+  }
+
+  #iterations {
+    position: absolute;
+    top: -40px;
+    left: 220px;
+    display: flex;
+    align-items: center;
+  }
+  #iterations h2 {
+    margin-right: 10px;
+  }
+
+  #stroke {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    display: flex;
+    align-items: center;
+  }
+  #stroke h2 {
+    margin-right: 10px;
+  }
+
+  canvas {
+  }
+</style>
+
+<script>
+  function trackTransforms(ctx) {
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    var xform = svg.createSVGMatrix();
+    ctx.getTransform = function () {
+      return xform;
+    };
+
+    var savedTransforms = [];
+    var save = ctx.save;
+    ctx.save = function () {
+      savedTransforms.push(xform.translate(0, 0));
+      return save.call(ctx);
+    };
+
+    var restore = ctx.restore;
+    ctx.restore = function () {
+      xform = savedTransforms.pop();
+      return restore.call(ctx);
+    };
+
+    var scale = ctx.scale;
+    ctx.scale = function (sx, sy) {
+      xform = xform.scaleNonUniform(sx, sy);
+      return scale.call(ctx, sx, sy);
+    };
+
+    var rotate = ctx.rotate;
+    ctx.rotate = function (radians) {
+      xform = xform.rotate((radians * 180) / Math.PI);
+      return rotate.call(ctx, radians);
+    };
+
+    var translate = ctx.translate;
+    ctx.translate = function (dx, dy) {
+      xform = xform.translate(dx, dy);
+      return translate.call(ctx, dx, dy);
+    };
+
+    var transform = ctx.transform;
+    ctx.transform = function (a, b, c, d, e, f) {
+      var m2 = svg.createSVGMatrix();
+      m2.a = a;
+      m2.b = b;
+      m2.c = c;
+      m2.d = d;
+      m2.e = e;
+      m2.f = f;
+      xform = xform.multiply(m2);
+      return transform.call(ctx, a, b, c, d, e, f);
+    };
+
+    var setTransform = ctx.setTransform;
+    ctx.setTransform = function (a, b, c, d, e, f) {
+      xform.a = a;
+      xform.b = b;
+      xform.c = c;
+      xform.d = d;
+      xform.e = e;
+      xform.f = f;
+      return setTransform.call(ctx, a, b, c, d, e, f);
+    };
+
+    var pt = svg.createSVGPoint();
+    ctx.transformedPoint = function (x, y) {
+      pt.x = x;
+      pt.y = y;
+      return pt.matrixTransform(xform.inverse());
+    };
+  }
+
+  class Canvas {
+    constructor(app) {
+      this.app = app;
+      this.$canvas = document.querySelector("#canvas");
+      this.$canvas.width = window.innerWidth;
+      this.$canvas.height = window.innerHeight;
+      //this.$download = document.querySelector('#download')
+      this.ctx = this.$canvas.getContext("2d");
+      trackTransforms(this.ctx);
+
+      this.zoomFactor = 1.1;
+      this.lastX = this.$canvas.width / 2;
+      this.lastY = this.$canvas.height / 2;
+      this.dragStart = null;
+      this.dragged = null;
+      this.start = { x: 300, y: 500 };
+
+      this.handleZoom = this.handleZoom.bind(this);
+      this.handleMouseDown = this.handleMouseDown.bind(this);
+      this.handleMouseMove = this.handleMouseMove.bind(this);
+      this.handleMouseUp = this.handleMouseUp.bind(this);
+      this.handleDownload = this.handleDownload.bind(this);
+      this.redraw = this.redraw.bind(this);
+
+      this.$canvas.addEventListener("mousewheel", this.handleZoom, false);
+      this.$canvas.addEventListener("mousedown", this.handleMouseDown, false);
+      this.$canvas.addEventListener("mousemove", this.handleMouseMove, false);
+      this.$canvas.addEventListener("mouseup", this.handleMouseUp, false);
+      //this.$download.addEventListener('click', this.handleDownload)
+    }
+
+    redraw() {
+      let p1 = this.ctx.transformedPoint(0, 0);
+      let p2 = this.ctx.transformedPoint(
+        this.$canvas.width,
+        this.$canvas.height
+      );
+      this.ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+
+      this.ctx.save();
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      this.ctx.clearRect(0, 0, this.$canvas.width, this.$canvas.height);
+      this.ctx.restore();
+
+      this.update();
+    }
+
+    update() {
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.start.x, this.start.y);
+
+      this.nextX = this.start.x;
+      this.nextY = this.start.y;
+      this.rotation = 0;
+
+      this.app.currentAxiom.split("").map((symbol) => {
+        switch (symbol) {
+          case "F":
+            if (this.rotation === 0) {
+              this.nextX = this.nextX + this.app.config.size;
+            }
+
+            if (this.rotation === 90) {
+              this.nextY = this.nextY + this.app.config.size;
+            }
+
+            if (this.rotation === 180) {
+              this.nextX = this.nextX - this.app.config.size;
+            }
+
+            if (this.rotation === 270) {
+              this.nextY = this.nextY - this.app.config.size;
+            }
+            break;
+
+          case "+":
+            this.rotateClockwise();
+            break;
+
+          case "-":
+            this.rotateCouterClockwise();
+            break;
+        }
+
+        this.ctx.lineTo(this.nextX, this.nextY);
+      });
+
+      this.ctx.lineWidth = this.app.config.stroke;
+      this.ctx.stroke();
+    }
+
+    rotateClockwise() {
+      if (this.rotation === 270) this.rotation = -90;
+
+      this.rotation += 90;
+    }
+
+    rotateCouterClockwise() {
+      if (this.rotation === 0) this.rotation = 360;
+
+      this.rotation -= 90;
+    }
+
+    /* ---------------------------------------------------------------------- */
+
+    zoom(delta) {
+      let pt = this.ctx.transformedPoint(this.lastX, this.lastY);
+      this.ctx.translate(pt.x, pt.y);
+
+      let factor = Math.pow(this.zoomFactor, delta);
+      this.ctx.scale(factor, factor);
+      this.ctx.translate(-pt.x, -pt.y);
+
+      this.redraw();
+    }
+
+    handleZoom(e) {
+      let delta = e.wheelDelta ? e.wheelDelta / 40 : e.detail ? -e.detail : 0;
+      if (delta) this.zoom(delta);
+    }
+
+    handleMouseDown(e) {
+      this.lastX = e.offsetX || e.pageX - this.$canvas.offsetLeft;
+      this.lastY = e.offsetY || e.pageY - this.$canvas.offsetTop;
+
+      this.dragStart = this.ctx.transformedPoint(this.lastX, this.lastY);
+      this.dragged = false;
+    }
+
+    handleMouseMove(e) {
+      this.lastX = e.offsetX || e.pageX - this.$canvas.offsetLeft;
+      this.lastY = e.offsetY || e.pageY - this.$canvas.offsetTop;
+
+      this.dragged = true;
+
+      if (this.dragStart) {
+        let pt = this.ctx.transformedPoint(this.lastX, this.lastY);
+        this.ctx.translate(pt.x - this.dragStart.x, pt.y - this.dragStart.y);
+        this.redraw();
+      }
+    }
+
+    handleMouseUp(e) {
+      this.dragStart = null;
+      if (!this.dragged) this.zoom(e.shiftKey ? -1 : 1);
+    }
+
+    handleDownload(e) {
+      e.preventDefault();
+
+      const imgData = this.ctx.getImageData(0, 0, 10000, 10000);
+
+      const c2 = document.querySelector("#for-download");
+      c2.width = imgData.width;
+      c2.height = imgData.height;
+
+      const ctx2 = c2.getContext("2d");
+      ctx2.putImageData(imgData, 0, 0);
+    }
+  }
+
+  class DomUI {
+    constructor(app) {
+      this.app = app;
+      this.$iterations = document.querySelector("#iterations");
+      this.$stroke = document.querySelector("#stroke");
+      this.$symbols = document.querySelector("#symbols");
+      this.$axiom = document.querySelector("#axiom");
+      this.$rule = document.querySelector("#rule");
+      this.$tabs = document.querySelector("#tabs");
+
+      this.handleClick = this.handleClick.bind(this);
+      this.load = this.load.bind(this);
+      this.reload = this.reload.bind(this);
+
+      this.currentTab = "segment";
+
+      window.addEventListener("click", this.handleClick);
+
+      this.load();
+    }
+
+    load() {
+      this.$iterations
+        .querySelector(`[data-value="${this.app.config.iterations}"]`)
+        .classList.add("is-active");
+      this.$stroke
+        .querySelector(`[data-value="${this.app.config.stroke}"]`)
+        .classList.add("is-active");
+      this.$tabs
+        .querySelector(`[data-tab="${this.currentTab}"]`)
+        .classList.add("is-active");
+
+      this.app.symbols.map((item) => {
+        const symbolEl = document.createElement("a");
+        symbolEl.classList.add(item.theme);
+        symbolEl.innerHTML = item.icon;
+        symbolEl.setAttribute("data-symbol", item.symbol);
+
+        this.$symbols.querySelector(".tiles").appendChild(symbolEl);
+      });
+
+      this.app.config.axiom.split("").map((item, idx) => {
+        const symbol = this.app.symbols.find((sym) => sym.symbol === item);
+        const symbolEl = document.createElement("a");
+        symbolEl.classList.add(symbol.theme);
+        symbolEl.innerHTML = symbol.icon;
+        symbolEl.setAttribute("data-symbol", symbol.symbol);
+        symbolEl.setAttribute("data-index", idx);
+
+        this.$axiom.querySelector(".tiles").appendChild(symbolEl);
+      });
+
+      this.app.config.rule.split("").map((item, idx) => {
+        const symbol = this.app.symbols.find((sym) => sym.symbol === item);
+        const symbolEl = document.createElement("a");
+        symbolEl.classList.add(symbol.theme);
+        symbolEl.innerHTML = symbol.icon;
+        symbolEl.setAttribute("data-symbol", symbol.symbol);
+        symbolEl.setAttribute("data-index", idx);
+
+        this.$rule.querySelector(".tiles").appendChild(symbolEl);
+      });
+
+      if (this.currentTab === "segment") {
+        this.$rule.style.display = "block";
+        this.$axiom.style.display = "none";
+      }
+
+      if (this.currentTab === "shape") {
+        this.$rule.style.display = "none";
+        this.$axiom.style.display = "block";
+      }
+    }
+
+    reload() {
+      this.$tabs
+        .querySelectorAll("a")
+        .forEach((item) => item.classList.remove("is-active"));
+
+      this.$symbols.querySelector(".tiles").innerHTML = "";
+      this.$axiom.querySelector(".tiles").innerHTML = "";
+      this.$rule.querySelector(".tiles").innerHTML = "";
+
+      this.load();
+    }
+
+    handleClick(e) {
+      if (e.target.parentElement.parentElement.id === "iterations") {
+        const el = e.target;
+
+        this.$iterations
+          .querySelectorAll("a")
+          .forEach((item) => item.classList.remove("is-active"));
+        el.classList.add("is-active");
+
+        this.app.setConfig({ iterations: +el.getAttribute("data-value") });
+      } else if (e.target.parentElement.parentElement.id === "stroke") {
+        const el = e.target;
+
+        this.$stroke
+          .querySelectorAll("a")
+          .forEach((item) => item.classList.remove("is-active"));
+        el.classList.add("is-active");
+
+        this.app.setConfig({ stroke: +el.getAttribute("data-value") });
+      } else if (e.target.parentElement.parentElement.id === "rule") {
+        const el = e.target;
+        const index = +el.getAttribute("data-index");
+        const newRule =
+          this.app.config.rule.slice(0, index) +
+          this.app.config.rule.slice(index + 1);
+
+        this.app.setConfig({ rule: newRule });
+      } else if (e.target.parentElement.parentElement.id === "axiom") {
+        const el = e.target;
+        const index = +el.getAttribute("data-index");
+        const newAxiom =
+          this.app.config.axiom.slice(0, index) +
+          this.app.config.axiom.slice(index + 1);
+
+        this.app.setConfig({ axiom: newAxiom });
+      } else if (e.target.parentElement.parentElement.id === "symbols") {
+        const el = e.target;
+        const symbol = el.getAttribute("data-symbol");
+
+        if (this.currentTab === "segment") {
+          const newRule = this.app.config.rule + symbol;
+          this.app.setConfig({ rule: newRule });
+        }
+
+        if (this.currentTab === "shape") {
+          const newAxiom = this.app.config.axiom + symbol;
+          this.app.setConfig({ axiom: newAxiom });
+        }
+      } else if (e.target.parentElement.id === "tabs") {
+        const el = e.target;
+        const tab = el.getAttribute("data-tab");
+
+        this.currentTab = tab;
+        this.reload();
+      }
+    }
+  }
+
+  class Fractals {
+    constructor() {
+      this.symbols = [
+        {
+          symbol: "-",
+          name: "Rotate Counterclockwise",
+          icon: "&cularr;",
+          theme: "is-small",
+        },
+        { symbol: "F", name: "Forward", icon: "Fwd", theme: "is-large" },
+        {
+          symbol: "+",
+          name: "Rotate Clockwise",
+          icon: "&curarr;",
+          theme: "is-small",
+        },
+      ];
+
+      this.config = {
+        size: 100,
+        stroke: 2,
+        iterations: 1,
+        rotation: 90,
+        axiom: "F",
+        rule: "F-F+F+F-F",
+      };
+
+      //A | F+F+F+F
+      //R | F-F+F+F-F
+
+      //A | F++F++F++F++F
+      //R | F-F+F+F-FF
+
+      this.canvas = new Canvas(this);
+      this.interface = new DomUI(this);
+
+      this.fractalize();
+    }
+
+    setConfig(newConfig) {
+      const changes = {
+        ...this.config,
+        ...newConfig,
+      };
+
+      this.config = { ...changes };
+
+      this.interface.reload();
+      this.fractalize();
+    }
+
+    fractalize() {
+      this.currentAxiom = this.config.axiom;
+
+      for (let i = 0; i < this.config.iterations; i++) {
+        this.currentAxiom = this.currentAxiom
+          .split("")
+          .map((symbol) => (symbol === "F" ? this.config.rule : symbol))
+          .join("");
+      }
+
+      this.canvas.redraw();
+    }
+  }
+
+  window.addEventListener("load", () => new Fractals());
+</script>
